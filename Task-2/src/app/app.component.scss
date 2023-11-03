@@ -24,7 +24,11 @@ li {
   padding-bottom: 28px;
 }
 table {
-  width: 70%;
+  width: 100%;
+}
+.stico {
+  position: absolute;
+  display: flex;
 }
 td,
 th {
@@ -60,4 +64,9 @@ th {
   margin: 26px;
   border: 1px gray solid;
   border-radius: 22px;
+}
+::ng-deep
+  .mdc-text-field--filled:not(.mdc-text-field--disabled)
+  .mdc-line-ripple::before {
+  border-bottom-color: gray !important;
 }

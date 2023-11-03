@@ -1,0 +1,6 @@
+* Page title is center aligned on the pdf
+* Modified no data label based on context (no notes by filter and no notes)
+* Added excel file import
+* Modified notes table widths
+* Added event toast messages
+* Status now shows left icons and in progress icon if status is not among listed

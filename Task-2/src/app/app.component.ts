@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import * as pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import { createPdf } from 'pdfmake/build/pdfmake';
+import * as XLSX from 'xlsx';
 
 export interface Note {
   title: string;
@@ -63,10 +63,11 @@ export class AppComponent {
         break;
       default:
         this.notesFilteredList = this.notesList.filter((nt) => {
-          nt.status.toLowerCase() === this.selectedTab.toLowerCase();
+          return nt.status.toLowerCase() == this.selectedTab.toLowerCase();
         });
         break;
     }
+    this.snack.open('Notes added!', 'Okay', { duration: 1000 });
   }
   downloadPdf() {
     if (this.notesList.length == 0) {
@@ -78,14 +79,17 @@ export class AppComponent {
       return;
     }
     const docDef = {
-      header: [{ text: 'NOTES LIST', style: 'header' }],
+      header: { text: 'NOTES LIST', style: 'header' },
       styles: {
         header: {
-          fontSize: 20,
+          fontSize: 14,
           bold: true,
         },
       },
-      content: [this.table(this.notesList, ['title', 'status'])],
+      content: [
+        { text: '', style: 'ad' },
+        this.table(this.notesList, ['title', 'status']),
+      ],
     };
     createPdf(docDef).open();
   }
@@ -97,12 +101,21 @@ export class AppComponent {
         body: this.buildTableBody(data, columns),
       },
       header: ['Title', 'Status'],
-      footer: ['ENd of Note List'],
+      footer: ['End of Note List'],
     };
   }
   buildTableBody(data: any, columns: any) {
     var body = [];
-    body.push(columns);
+    var uc = columns.map(function (x: any) {
+      let thArray: any = [];
+      thArray.push({
+        text: x.toUpperCase(),
+        style: 'header',
+        alignment: 'center',
+      });
+      return thArray;
+    });
+    body.push(uc);
     data.forEach(function (row: any) {
       let dataRow: any = [];
       columns.forEach(function (column: any) {
@@ -121,5 +134,13 @@ export class AppComponent {
       );
       return;
     }
+    let element = document.getElementById('notestable');
+    const ws: XLSX.WorkSheet = XLSX.utils.table_to_sheet(element);
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Notes');
+    XLSX.writeFile(wb, 'NotesList.xlsx');
+    this.snack.open('Excel file saved to downloads folder!', 'Okay', {
+      duration: 2000,
+    });
   }
 }
