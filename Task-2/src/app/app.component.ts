@@ -34,7 +34,9 @@ export class AppComponent {
     status: new FormControl('', [Validators.required]),
   });
 
-  constructor(private snack: MatSnackBar) {}
+  constructor(private snack: MatSnackBar) {
+    (window as any).pdfMake.vfs = pdfFonts.pdfMake.vfs;
+  }
 
   saveNote() {
     if (this.noteFormGroup.invalid) {
@@ -66,7 +68,50 @@ export class AppComponent {
         break;
     }
   }
-  downloadPdf() {}
+  downloadPdf() {
+    if (this.notesList.length == 0) {
+      this.snack.open(
+        'Notes list empty. Save notes for report generation!',
+        'Okay',
+        { duration: 3000 }
+      );
+      return;
+    }
+    const docDef = {
+      header: [{ text: 'NOTES LIST', style: 'header' }],
+      styles: {
+        header: {
+          fontSize: 20,
+          bold: true,
+        },
+      },
+      content: [this.table(this.notesList, ['title', 'status'])],
+    };
+    createPdf(docDef).open();
+  }
+  table(data: any, columns: any) {
+    return {
+      table: {
+        headerRows: 1,
+        widths: ['*', 100],
+        body: this.buildTableBody(data, columns),
+      },
+      header: ['Title', 'Status'],
+      footer: ['ENd of Note List'],
+    };
+  }
+  buildTableBody(data: any, columns: any) {
+    var body = [];
+    body.push(columns);
+    data.forEach(function (row: any) {
+      let dataRow: any = [];
+      columns.forEach(function (column: any) {
+        dataRow.push(row[column].toString());
+      });
+      body.push(dataRow);
+    });
+    return body;
+  }
   downloadExcel() {
     if (this.notesList.length == 0) {
       this.snack.open(
