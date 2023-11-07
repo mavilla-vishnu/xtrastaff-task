@@ -50,6 +50,7 @@ export class AppComponent implements OnInit {
     status: new FormControl('', [Validators.required]),
   });
   notes$: any;
+  showIcon = true;
   public myError = (controlName: string, errorName: string) => {
     return this.noteFormGroup.controls[controlName].hasError(errorName);
   };
@@ -63,7 +64,6 @@ export class AppComponent implements OnInit {
   }
   ngOnInit() {
     this.getNotes();
-    this.noteFormGroup.controls['title'].setErrors(['Enter valid title']);
   }
   getNotes() {
     this.notesFilteredList = [];
@@ -73,6 +73,7 @@ export class AppComponent implements OnInit {
     this.notes$.subscribe((res: Note[]) => {
       if (res.length > 0) {
         this.notesList = res;
+        console.log(this.notesList.length);
         this.filterNotesBytab();
       }
       this.spinnerService.dismissSpinner();
@@ -81,57 +82,48 @@ export class AppComponent implements OnInit {
 
   saveNote() {
     //We can go th easy way with fornGrou.invali boolean an throw error but required validation was not giving when is empty. So going this way as got less time for now
-    if (this.noteFormGroup.controls['title'].value.trim() === '') {
-      this.noteFormGroup.controls['title'].setErrors({
-        'incorrect:true': true,
-      });
-      this.snack.open('Enterr title of Note!', 'Okay', {
+    console.log(this.noteFormGroup.valid);
+    if (this.noteFormGroup.invalid) {
+      this.snack.open('Enter valid data of note!', 'Okay', {
         duration: 2000,
       });
-    } else if (this.noteFormGroup.controls['status'].value.trim() === '') {
-      this.noteFormGroup.controls['status'].setErrors({
-        'incorrect:true': true,
-      });
-      this.snack.open('Enterr status of Note!', 'Okay', {
-        duration: 2000,
-      });
-    } else {
-      this.spinnerService.showSpinner('Saving note. Plese wait...');
-      var data: Note = {
-        id: '',
-        title: this.noteFormGroup.controls['title'].value,
-        status: this.noteFormGroup.controls['status'].value,
-        timestamp: new Date().getTime(),
-      };
-      addDoc(collection(this.firestore, 'notes'), data)
-        .then((res) => {
-          updateDoc(res, { id: res.id })
-            .then((res) => {
-              this.snack.open('Notes added successfully!', 'Okay', {
-                duration: 2000,
-              });
-              this.noteFormGroup.reset();
-              this.spinnerService.dismissSpinner();
-              this.filterNotesBytab();
-              this.spinnerService.dismissSpinner();
-            })
-            .catch((er) => {
-              this.snack.open('Error adding Notes!', 'Okay', {
-                duration: 2000,
-              });
-              this.spinnerService.dismissSpinner();
-            });
-        })
-        .catch((err) => {
-          this.snack.open('Error adding Notes!', 'Okay', { duration: 2000 });
-          this.spinnerService.dismissSpinner();
-        });
+      return;
     }
+    this.spinnerService.showSpinner('Saving note. Plese wait...');
+    var data: Note = {
+      id: '',
+      title: this.noteFormGroup.controls['title'].value,
+      status: this.noteFormGroup.controls['status'].value,
+      timestamp: new Date().getTime(),
+    };
+    addDoc(collection(this.firestore, 'notes'), data)
+      .then((res) => {
+        updateDoc(res, { id: res.id })
+          .then((res) => {
+            this.snack.open('Notes added successfully!', 'Okay', {
+              duration: 2000,
+            });
+            this.noteFormGroup.reset();
+            this.spinnerService.dismissSpinner();
+            this.filterNotesBytab();
+            this.spinnerService.dismissSpinner();
+            this.noteFormGroup.controls['title'].setErrors(null);
+            this.noteFormGroup.controls['status'].setErrors(null);
+          })
+          .catch((er) => {
+            this.snack.open('Error adding Notes!', 'Okay', {
+              duration: 2000,
+            });
+            this.spinnerService.dismissSpinner();
+          });
+      })
+      .catch((err) => {
+        this.snack.open('Error adding Notes!', 'Okay', { duration: 2000 });
+        this.spinnerService.dismissSpinner();
+      });
   }
   filterNotesBytab() {
     this.notesFilteredList = [];
-    this.noteFormGroup.controls['title'].setErrors(null);
-    this.noteFormGroup.controls['status'].setErrors(null);
     switch (this.selectedTab) {
       case 'All':
         this.notesFilteredList = this.notesList;
@@ -149,7 +141,7 @@ export class AppComponent implements OnInit {
   downloadPdf() {
     if (this.notesList.length == 0) {
       this.snack.open(
-        'Notes list empty. Save notes for report generation!',
+        'Notes list is empty. Save notes for report generation!',
         'Okay',
         { duration: 3000 }
       );
@@ -211,15 +203,26 @@ export class AppComponent implements OnInit {
       );
       return;
     }
+    this.showIcon = false;
     let element = document.getElementById('notestable');
     const ws: XLSX.WorkSheet = XLSX.utils.table_to_sheet(element);
+    delete ws['E1'];
+    delete ws['E3'];
+    delete ws['E4'];
+    delete ws['E5'];
+    delete ws['E6'];
+    delete ws['E7'];
+    var wid = [{ wch: 10 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 10 }];
+    ws['!cols'] = wid;
     const wb: XLSX.WorkBook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Notes');
-    ws['!cols'] = [];
     XLSX.writeFile(wb, 'NotesList.xlsx');
     this.snack.open('Excel file saved to downloads folder!', 'Okay', {
       duration: 2000,
     });
+    setTimeout(() => {
+      this.showIcon = true;
+    }, 2000);
   }
   editNote(note: Note) {
     const sd = this.dialog.open(EditNotesComponent, { data: note });

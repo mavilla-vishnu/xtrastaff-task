@@ -24,15 +24,15 @@
     <mat-form-field class="full-width">
       <mat-label>Title</mat-label>
       <input matInput type="text" formControlName="title" />
-      <mat-error *ngIf="myError('title', 'required')">
-        Please enter note title
+      <mat-error *ngIf="noteFormGroup.controls['title'].hasError('required')">
+        Title of note is <strong>required</strong>
       </mat-error>
     </mat-form-field>
     <mat-form-field class="full-width">
       <mat-label>Status</mat-label>
       <input matInput type="text" formControlName="status" />
       <mat-error *ngIf="noteFormGroup.controls['status'].hasError('required')">
-        Please enter status of note
+        Status of note is <strong>required</strong>
       </mat-error>
     </mat-form-field>
     <button mat-raised-button color="primary" (click)="saveNote()">
@@ -70,7 +70,7 @@
       colspan="5"
       *ngIf="notesList.length != 0 && notesFilteredList.length == 0"
     >
-      No notes for the selected status!
+      No notes for the selected '{{ selectedTab }}'' status!
     </td>
   </tr>
   <tbody>
@@ -78,22 +78,21 @@
       <td style="font-weight: 900">{{ i + 1 }}</td>
       <td>{{ note.title }}</td>
       <td>
-        <p style="margin: 0">
-          <mat-icon class="stico">{{
-            note.status.toLowerCase() == "active"
-              ? "bolt"
-              : note.status.toLowerCase() == "completed"
-              ? "done"
-              : note.status.toLowerCase() == "pending"
-              ? "hourglass_empty"
-              : note.status.toLowerCase() == "rejected"
-              ? "close"
-              : note.status.toLowerCase() == "in progress"
-              ? "east"
-              : "show_chart"
-          }}</mat-icon
-          >{{ note.status }}
-        </p>
+        <!-- Tried hiding the icon when generating excel as its showing the icon name in excel status column but even when the icon is not showsn with ngif the library is showing the iocon name -->
+        <mat-icon *ngIf="showIcon" class="sticon">{{
+          note.status.toLowerCase() == "active"
+            ? "bolt"
+            : note.status.toLowerCase() == "completed"
+            ? "done"
+            : note.status.toLowerCase() == "pending"
+            ? "hourglass_empty"
+            : note.status.toLowerCase() == "rejected"
+            ? "close"
+            : note.status.toLowerCase() == "in progress"
+            ? "east"
+            : "show_chart"
+        }}</mat-icon>
+        <p style="margin: 0">{{ note.status }}</p>
       </td>
       <td>{{ note.timestamp | date : "dd/MM/yyyy hh:mm a" }}</td>
       <td>
