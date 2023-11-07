@@ -1,0 +1,30 @@
+<mat-card>
+  <mat-card-content>
+    <section class="container">
+      <h1>Edit Note</h1>
+      <form [formGroup]="noteFormGroup">
+        <mat-form-field class="full-width">
+          <mat-label>Title</mat-label>
+          <input matInput type="text" formControlName="title" />
+          <mat-error
+            *ngIf="noteFormGroup.controls['title'].hasError('required')"
+          >
+            Please enter note title
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field class="full-width">
+          <mat-label>Status</mat-label>
+          <input matInput type="text" formControlName="status" />
+          <mat-error
+            *ngIf="noteFormGroup.controls['status'].hasError('required')"
+          >
+            Please enter status of note
+          </mat-error>
+        </mat-form-field>
+        <button mat-raised-button color="primary" (click)="saveNote()">
+          <mat-icon>save</mat-icon>Save note
+        </button>
+      </form>
+    </section>
+  </mat-card-content>
+</mat-card>

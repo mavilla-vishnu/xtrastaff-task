@@ -53,31 +53,35 @@
 </ul>
 <table id="notestable">
   <tr>
-    <th style="width: 80%">Title</th>
-    <th style="width: 20%">Status</th>
+    <th>S.No</th>
+    <th style="width: 50%">Title</th>
+    <th style="width: 15%">Status</th>
+    <th style="width: 15%">Created at</th>
+    <th style="width: 15%">Actions</th>
   </tr>
   <tr class="nodata">
     <td
-      colspan="2"
+      colspan="3"
       *ngIf="notesList.length == 0 && notesFilteredList.length == 0"
     >
       No notes are added!
     </td>
     <td
-      colspan="2"
+      colspan="3"
       *ngIf="notesList.length != 0 && notesFilteredList.length == 0"
     >
       No notes for the selected status!
     </td>
   </tr>
   <tbody>
-    <tr *ngFor="let note of notesFilteredList">
+    <tr *ngFor="let note of notesFilteredList; let i = index">
+      <td style="font-weight: 900">{{ i + 1 }}</td>
       <td>{{ note.title }}</td>
       <td>
         <p style="margin: 0">
           <mat-icon class="stico">{{
             note.status.toLowerCase() == "active"
-              ? "active"
+              ? "bolt"
               : note.status.toLowerCase() == "completed"
               ? "done"
               : note.status.toLowerCase() == "pending"
@@ -90,6 +94,15 @@
           }}</mat-icon
           >{{ note.status }}
         </p>
+      </td>
+      <td>{{ note.timestamp | date : "dd/MM/yyyy hh:mm a" }}</td>
+      <td>
+        <button mat-icon-button color="primary" (click)="editNote(note)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="deleteNote(note)">
+          <mat-icon>delete</mat-icon>
+        </button>
       </td>
     </tr>
   </tbody>

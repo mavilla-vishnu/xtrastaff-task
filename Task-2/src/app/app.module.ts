@@ -11,10 +11,24 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { MatInputModule } from '@angular/material/input';
+import { LoadingComponent } from './loading/loading.component';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatCardModule } from '@angular/material/card';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { provideFirebaseApp, getApp, initializeApp } from '@angular/fire/app';
+import {
+  getFirestore,
+  provideFirestore,
+  FirestoreModule,
+} from '@angular/fire/firestore';
+import { environment } from 'src/environment/environment';
+import { EditNotesComponent } from './edit-notes/edit-notes.component';
 
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [AppComponent, LoadingComponent, EditNotesComponent],
   imports: [
+    provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
+    provideFirestore(() => getFirestore()),
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
@@ -26,6 +40,10 @@ import { MatInputModule } from '@angular/material/input';
     CommonModule,
     ReactiveFormsModule,
     MatInputModule,
+    MatDialogModule,
+    MatCardModule,
+    MatProgressSpinnerModule,
+    FirestoreModule,
   ],
   providers: [],
   bootstrap: [AppComponent],
