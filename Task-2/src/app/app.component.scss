@@ -7,21 +7,39 @@
 }
 ul {
   list-style-type: none;
-  margin: 22px;
+  margin-left: -36px;
+  line-height: 0px;
 }
-
+li:last-child {
+  border-right: 1px gray solid;
+}
 li {
   float: left;
   padding: 22px;
 }
+canvas {
+  height: 100%;
+  width: 100%;
+}
 .active {
   color: green;
   border-top: 4px solid green;
-  border-radius: 4px;
+  border-top-right-radius: 4px;
+  border-top-left-radius: 4px;
   border-left: 1px gray solid;
   border-right: gray solid 1px;
   height: 0px;
-  padding-bottom: 28px;
+  padding-bottom: 12px;
+}
+.not-active {
+  cursor: default;
+  border-top: 2px solid #b1b1b1;
+  border-top-right-radius: 4px;
+  border-top-left-radius: 4px;
+  border-left: 1px gray solid;
+  height: 0px;
+  padding-bottom: 12px;
+  line-height: 0px;
 }
 table {
   width: 100%;
@@ -37,7 +55,7 @@ th {
   padding: 8px;
 }
 .nodata {
-  text-align: center;
+  // text-align: center;
   color: #bcbcbc;
 }
 ::ng-deep .mdc-text-field--filled:not(.mdc-text-field--disabled) {

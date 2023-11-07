@@ -23,9 +23,10 @@ import {
 } from '@angular/fire/firestore';
 import { environment } from 'src/environment/environment';
 import { EditNotesComponent } from './edit-notes/edit-notes.component';
+import { DeleteNoteComponent } from './delete-note/delete-note.component';
 
 @NgModule({
-  declarations: [AppComponent, LoadingComponent, EditNotesComponent],
+  declarations: [AppComponent, LoadingComponent, EditNotesComponent, DeleteNoteComponent],
   imports: [
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
     provideFirestore(() => getFirestore()),

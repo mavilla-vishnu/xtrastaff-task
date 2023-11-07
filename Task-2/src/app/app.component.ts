@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { Firestore, collection, collectionData } from '@angular/fire/firestore';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -17,6 +17,7 @@ import {
 } from 'firebase/firestore';
 import { MatDialog } from '@angular/material/dialog';
 import { EditNotesComponent } from './edit-notes/edit-notes.component';
+import { DeleteNoteComponent } from './delete-note/delete-note.component';
 
 export interface Note {
   id: string;
@@ -49,6 +50,9 @@ export class AppComponent implements OnInit {
     status: new FormControl('', [Validators.required]),
   });
   notes$: any;
+  public myError = (controlName: string, errorName: string) => {
+    return this.noteFormGroup.controls[controlName].hasError(errorName);
+  };
 
   constructor(
     private snack: MatSnackBar,
@@ -59,6 +63,7 @@ export class AppComponent implements OnInit {
   }
   ngOnInit() {
     this.getNotes();
+    this.noteFormGroup.controls['title'].setErrors(['Enter valid title']);
   }
   getNotes() {
     this.notesFilteredList = [];
@@ -75,40 +80,53 @@ export class AppComponent implements OnInit {
   }
 
   saveNote() {
-    if (this.noteFormGroup.invalid) {
-      this.snack.open('Enter valid title and status of note!', 'Okay', {
-        duration: 3000,
+    //We can go th easy way with fornGrou.invali boolean an throw error but required validation was not giving when is empty. So going this way as got less time for now
+    if (this.noteFormGroup.controls['title'].value.trim() === '') {
+      this.noteFormGroup.controls['title'].setErrors({
+        'incorrect:true': true,
       });
-      return;
-    }
-    this.spinnerService.showSpinner('Saving note. Plese wait...');
-    var data: Note = {
-      id: '',
-      title: this.noteFormGroup.controls['title'].value,
-      status: this.noteFormGroup.controls['status'].value,
-      timestamp: new Date().getTime(),
-    };
-    addDoc(collection(this.firestore, 'notes'), data)
-      .then((res) => {
-        updateDoc(res, { id: res.id })
-          .then((res) => {
-            this.snack.open('Notes added successfully!', 'Okay', {
-              duration: 2000,
+      this.snack.open('Enterr title of Note!', 'Okay', {
+        duration: 2000,
+      });
+    } else if (this.noteFormGroup.controls['status'].value.trim() === '') {
+      this.noteFormGroup.controls['status'].setErrors({
+        'incorrect:true': true,
+      });
+      this.snack.open('Enterr status of Note!', 'Okay', {
+        duration: 2000,
+      });
+    } else {
+      this.spinnerService.showSpinner('Saving note. Plese wait...');
+      var data: Note = {
+        id: '',
+        title: this.noteFormGroup.controls['title'].value,
+        status: this.noteFormGroup.controls['status'].value,
+        timestamp: new Date().getTime(),
+      };
+      addDoc(collection(this.firestore, 'notes'), data)
+        .then((res) => {
+          updateDoc(res, { id: res.id })
+            .then((res) => {
+              this.snack.open('Notes added successfully!', 'Okay', {
+                duration: 2000,
+              });
+              this.noteFormGroup.reset();
+              this.spinnerService.dismissSpinner();
+              this.filterNotesBytab();
+              this.spinnerService.dismissSpinner();
+            })
+            .catch((er) => {
+              this.snack.open('Error adding Notes!', 'Okay', {
+                duration: 2000,
+              });
+              this.spinnerService.dismissSpinner();
             });
-            this.noteFormGroup.reset();
-            this.spinnerService.dismissSpinner();
-            this.filterNotesBytab();
-            this.spinnerService.dismissSpinner();
-          })
-          .catch((er) => {
-            this.snack.open('Error adding Notes!', 'Okay', { duration: 2000 });
-            this.spinnerService.dismissSpinner();
-          });
-      })
-      .catch((err) => {
-        this.snack.open('Error adding Notes!', 'Okay', { duration: 2000 });
-        this.spinnerService.dismissSpinner();
-      });
+        })
+        .catch((err) => {
+          this.snack.open('Error adding Notes!', 'Okay', { duration: 2000 });
+          this.spinnerService.dismissSpinner();
+        });
+    }
   }
   filterNotesBytab() {
     this.notesFilteredList = [];
@@ -210,15 +228,9 @@ export class AppComponent implements OnInit {
     });
   }
   deleteNote(note: Note) {
-    const db = getFirestore();
-    const docRef = doc(db, 'notes', note.id);
-    deleteDoc(docRef).then((res: any) => {
-      if (confirm('Are you sure you want to delete this note?') == true) {
-        this.snack.open('Document deleted successfully!', 'Okay', {
-          duration: 2000,
-        });
-        this.getNotes();
-      }
+    const delDialog = this.dialog.open(DeleteNoteComponent, { data: note });
+    delDialog.afterClosed().subscribe((rr) => {
+      this.getNotes();
     });
   }
 }
